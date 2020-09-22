@@ -14,10 +14,11 @@ class Table():
                  org_name = None,
                  org_level = None,
                  top_org_id = None,
-                 enabled = "1",
-                 org_type = "fi",
-                 set_fi_store = "false",
-                 set_top = "false"):
+                 enabled = True,       # true
+                 org_type = "fi",   # ?
+                 set_fi_store = False,  # false
+                 set_top = False        # false
+                 ):
         super().__init__()
         self.org_id = org_id
         self.inter_org_no = inter_org_no
@@ -43,7 +44,17 @@ class TableInjection():
     def buildSrcValue(self, data : Table) -> tuple:
         s, v = list.copy(self.attrs), []
         for attr in s:
-            v.append("'{}'".format(getattr(data, attr)))
+            e = getattr(data, attr)
+            if e is None:
+                e = "null"
+            # elif isinstance(e, str):
+            #     e = "'{}'".format(e)
+            elif isinstance(e, bool):
+                e = "1" if e else "0"
+            else:
+                e = "'{}'".format(e)
+            # raise RuntimeError("invalid value type to make sql")
+            v.append(e)
         # special
         s.append("create_time")
         v.append("now()")
@@ -55,16 +66,17 @@ class TableInjection():
         return "insert into {} ({}) \nvalues({});\n".format(tableName, srcFieldString, valueFieldString)
 
     def run(self, filePath, trees : list):
-        f = open(filePath, "w+", encoding="utf-8")
+        file = open(filePath, "w+", encoding="utf-8")
         for tree in trees:
-            self.export(tree, f)
-        f.close()
+            file.write(self.insertSql("organization", *self.buildSrcValue(tree.getTable())))
+            self.export(tree, file)
+        file.close()
 
     # 遍历
     def export(self, head , file):
         for i, (key, node) in enumerate(head.getChildren().items()):
-            t = self.buildSrcValue(node.getTable())
-            file.write(self.insertSql("organization", *t))
+            # t = self.buildSrcValue(node.getTable())
+            file.write(self.insertSql("organization", *self.buildSrcValue(node.getTable())))
 
             self.export(node, file)
 

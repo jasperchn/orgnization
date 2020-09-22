@@ -75,7 +75,7 @@ class TreeBuilder():
             # 设置初值
             table : Table = head.getTable()
             table.org_id = self.uuid.generate()
-            table.parent_org_id = "null"
+            table.parent_org_id = None
             table.inter_org_no = self.interOrgNoFactory.getOne(str(i + interOrgNoHead))
             table.org_level = 1
             table.top_org_id = table.org_id

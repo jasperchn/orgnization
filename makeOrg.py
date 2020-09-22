@@ -2,7 +2,9 @@ from data.OrgTree import *
 
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"
-    srcPath = buildPath(resourcePath, "codes.csv")
+    # srcPath = buildPath(resourcePath, "codes.csv")
+    srcPath = buildPath(resourcePath, "codes-patched.csv")
+
 
     df = read(srcPath)
     pool = buildNodesPool(df)
