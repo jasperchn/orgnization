@@ -1,4 +1,4 @@
-from data.OrgTree import *
+from struct.OrgTree import *
 
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"

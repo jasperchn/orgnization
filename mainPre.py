@@ -1,4 +1,4 @@
-from data.OrgTree import *
+from struct.OrgTree import *
 import pandas as pd
 
 

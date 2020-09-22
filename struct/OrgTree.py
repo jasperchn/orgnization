@@ -1,4 +1,4 @@
-from data.Node import *
+from struct.Node import *
 from utils.TableOrganization import *
 from utils.Common import *
 import pandas as pd
