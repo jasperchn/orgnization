@@ -1,9 +1,8 @@
-from utils.TableOrganization import *
-# import utils
+from table.MetaTable import *
 
 class Node():
     # 可选父节点
-    def __init__(self, key, value : Table, parent: 'Node' = None):
+    def __init__(self, key, value : MetaTable, parent: 'Node' = None):
         self.key = key
         self.parent = parent
         self.value = value
@@ -15,7 +14,7 @@ class Node():
     def getKey(self):
         return self.key
 
-    def getTable(self) -> Table:
+    def getTable(self) -> MetaTable:
         return self.value
 
     def getRecentAdded(self):

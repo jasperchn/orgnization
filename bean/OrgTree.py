@@ -1,25 +1,33 @@
-from struct.Node import *
-from utils.TableOrganization import *
+from bean.Node import *
 from utils.Common import *
 import pandas as pd
 import utils.Constant as const
 from utils.Logger import *
 from utils.InterOrgNoFactory import *
 from utils.Uuid import *
-
+from table.UsrDb import *
 
 def buildNodesPool(data : pd.DataFrame) -> dict:
     pool = {}
     for i in data.index:
         line = data.loc[i]
         # tobe make: interOrgNo, orglevel， topId层次相关的值要等到树建完了才知道
-        table = Table(
+
+        table = Organization(
             org_id=line[const.R_id],
             parent_org_id=line[const.R_parent_org_id],
             area=line[const.R_district_code],
             fi_org_type=line[const.R_level_1_code],
             org_name=line[const.R_org_name]
         )
+
+        # table = Table(
+        #     org_id=line[const.R_id],
+        #     parent_org_id=line[const.R_parent_org_id],
+        #     area=line[const.R_district_code],
+        #     fi_org_type=line[const.R_level_1_code],
+        #     org_name=line[const.R_org_name]
+        # )
         # 每个node初始化时都没有父节点
         pool[table.org_id] = Node(table.org_id, table, None)
     return pool
@@ -46,7 +54,7 @@ class TreeBuilder():
         with logger:
             for _, node in self.pool.items():
                 # 头结点，加入森林
-                table : Table = node.getTable()
+                table : Organization = node.getTable()
                 if isEmpty(table.parent_org_id):
                     self.trees.append(node)
                 # 非头结点，在pool中找父节点，建立关联
@@ -73,7 +81,7 @@ class TreeBuilder():
 
         for i, head in enumerate(self.trees):
             # 设置初值
-            table : Table = head.getTable()
+            table : Organization = head.getTable()
             table.org_id = self.uuid.generate()
             table.parent_org_id = None
             table.inter_org_no = self.interOrgNoFactory.getOne(str(i + interOrgNoHead))
@@ -91,9 +99,9 @@ class TreeBuilder():
     # 尾递归？
     def _fixSingleTree(self, head : Node, top: Node):
         for i, (key, node) in enumerate(head.getChildren().items()):
-            currentTable : Table = node.getTable()
-            parentTable : Table = head.getTable()
-            topTable : Table = top.getTable()
+            currentTable : Organization = node.getTable()
+            parentTable : Organization = head.getTable()
+            topTable : Organization = top.getTable()
 
             interOrgNo = self.interOrgNoFactory.getDown(parentTable.inter_org_no)
 
@@ -106,3 +114,14 @@ class TreeBuilder():
             self.nodesCount += 1
             self._fixSingleTree(node, top)
 
+    def toLogger(self, logger : Logger, close = True):
+        for tree in self.trees:
+            logger.write(tree.getTable().insert())
+            self._export(tree, logger)
+        if close:
+            logger.close()
+
+    def _export(self, head, logger : Logger):
+        for i, (key, node) in enumerate(head.getChildren().items()):
+            logger.write(node.getTable().insert())
+            self._export(node, logger)

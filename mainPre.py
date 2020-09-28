@@ -1,4 +1,4 @@
-from struct.OrgTree import *
+from bean.OrgTree import *
 import pandas as pd
 
 
@@ -9,21 +9,22 @@ def makeCoder(source : pd.DataFrame) -> dict:
         ret[raw] = code
     return ret
 
+
+'''
+codes是最早的数据改了表头得到的
+首先用codes + patch + type 把新增加的字典和修补的机构信息恢复出来，得到codes-patched
+然后再到makeOrg中用codes-patched生成sql
+'''
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"
-    patchPath = buildPath(resourcePath, "patch.csv")
-    srcPath = buildPath(resourcePath, "codes.csv")
-    typePath = buildPath(resourcePath, "types.csv")
-    outPath = buildPath(resourcePath, "codes-patched.csv")
-
+    patchPath = buildPath(resourcePath, "src", "patch.csv")
+    srcPath = buildPath(resourcePath, "src", "codes.csv")
+    typePath = buildPath(resourcePath, "src", "types.csv")
+    outPath = buildPath(resourcePath, "src", "codes-patched.csv")
 
     patch : pd.DataFrame = read(patchPath)
     src : pd.DataFrame = read(srcPath)
-    # types : pd.DataFrame = read(typePath)
-
     coder = makeCoder(read(typePath))
-
-
 
     # 先轮循patch，修复level_1_code
     for i in patch.index:

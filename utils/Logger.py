@@ -2,12 +2,14 @@
 
 class Logger():
 
-    def __init__(self, logPath = None) -> None:
+    def __init__(self, logPath=None, mode="w+") -> None:
         super().__init__()
-        self.logPath = logPath
+        self.logFile = open(logPath, mode, encoding="utf-8")
 
     def __enter__(self):
-        self.logFile = open(self.logPath, "w+", encoding="utf-8")
+        if self.logFile is None:
+            raise RuntimeError("file object does not exist")
+        # self.logFile = open(self.logPath, "w+", encoding="utf-8")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()

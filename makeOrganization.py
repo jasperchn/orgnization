@@ -1,9 +1,9 @@
-from struct.OrgTree import *
+from bean.OrgTree import *
 
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"
     # srcPath = buildPath(resourcePath, "codes.csv")
-    srcPath = buildPath(resourcePath, "codes-patched.csv")
+    srcPath = buildPath(resourcePath, "src", "codes-patched.csv")
 
 
     df = read(srcPath)
@@ -21,10 +21,8 @@ if __name__ == '__main__':
     treeBuilder.fixTreesLevel(interOrgNoHead=30)
     # treeBuilder.export(filePath= buildPath(resourcePath, "out", "org.sql"))
 
-    injector = TableInjection()
-    injector.run(buildPath(resourcePath, "out", "org.sql"), treeBuilder.trees)
+    organizationSql = Logger(buildPath(resourcePath, "out", "organization.sql"))
+    treeBuilder.toLogger(organizationSql, True)
 
-    # orgTree = OrgTree()
-    # orgTree._build(df)
 
     pass
