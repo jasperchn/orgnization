@@ -21,3 +21,10 @@ R_enabled = "enabled"
 R_address = "address"
 
 # orgtable
+
+
+from table.UsrDb import Role
+# Role table default value, just a dummy to keep code clean
+ROLE_PRESET_APP = Role(role_id=1, role_code="@app_user", role_name="平台内置用户角色", role_type="app")
+ROLE_PRESET_FI = Role(role_id=2, role_code="@fi_user", role_name="平台内置金融机构管理员", role_type="fi")
+ROLE_PRESET_OP = Role(role_id=3, role_code="@op_user", role_name="平台内置运营管理员", role_type="op")

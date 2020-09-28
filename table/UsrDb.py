@@ -201,3 +201,72 @@ class Organization(MetaTable):
         self.org_type = org_type
         self.set_fi_store = set_fi_store
         self.set_top = set_top
+
+class UserLinkOrganization(MetaTable):
+    def __init__(self,
+                 id,     # not very important
+                 user_id,
+                 user_org_id,
+                 create_by = "system",
+                 create_time = "now()",
+                 update_time = "now()",
+                 enabled = True,
+                 update_by = "system",
+                 display_name = None,
+                 employee_number = None,
+                 mail = None
+                 ):
+        super().__init__("user_organization")
+        self.id = id
+        self.user_id = user_id
+        self.user_org_id = user_org_id
+        self.create_by = create_by
+        self.create_time = create_time
+        self.update_time = update_time
+        self.enabled = enabled
+        self.update_by = update_by
+        self.display_name = display_name
+        self.employee_number = employee_number
+        self.mail = mail
+
+'''
+Role可以使用flyway里已经有的app, fi, op
+已经写在Constant里作为伪Role用
+'''
+class Role(MetaTable):
+    def __init__(self,
+                 role_id,
+                 role_code,
+                 role_name,
+                 role_org_id = None,
+                 role_type = None,
+                 create_by = "system",
+                 update_by = "system",
+                 create_time = "now()",
+                 update_time = "now()",
+                 description = None,
+                 enabled = True,
+                 build_in = True
+                 ):
+        super().__init__("role")
+        self.role_id = role_id
+        self.role_code = role_code
+        self.role_org_id = role_org_id
+        self.role_type = role_type
+        self.create_by = create_by
+        self.update_by = update_by
+        self.create_time = create_time
+        self.update_time = update_time
+        self.description = description
+        self.enabled = enabled
+        self.role_name = role_name
+        self.build_in = build_in
+
+class UserLinkRole(MetaTable):
+    def __init__(self,
+                 user_id,
+                 role_id
+                 ):
+        super().__init__("user_role")
+        self.role_id = role_id
+        self.user_id = user_id
