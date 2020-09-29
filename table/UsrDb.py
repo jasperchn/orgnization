@@ -202,7 +202,7 @@ class Organization(MetaTable):
         self.set_fi_store = set_fi_store
         self.set_top = set_top
 
-class UserLinkOrganization(MetaTable):
+class UserOrganization(MetaTable):
     def __init__(self,
                  id,     # not very important
                  user_id,
@@ -262,7 +262,7 @@ class Role(MetaTable):
         self.role_name = role_name
         self.build_in = build_in
 
-class UserLinkRole(MetaTable):
+class UserRole(MetaTable):
     def __init__(self,
                  user_id,
                  role_id

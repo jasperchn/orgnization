@@ -5,6 +5,15 @@ import pandas as pd
 import numpy as np
 
 
+def pathExists(obj : str) -> bool:
+    return os.path.exists(obj)
+
+def isExistedFile(obj : str) -> bool:
+    return pathExists(obj) and os.path.isfile(obj)
+
+def isExistedDir(obj : str) -> bool:
+    return pathExists(obj) and os.path.isdir(obj)
+
 def buildPath(*args):
     return '/'.join(args)
 

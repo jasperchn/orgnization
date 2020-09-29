@@ -8,6 +8,9 @@ class MetaTable(object):
         super().__init__()
         self.table_name = table_name
 
+    # quick debug
+    def __repr__(self):
+        return self.insert()
 
     def _buildSrcValue(self) -> tuple:
         s, v = [], []
@@ -27,7 +30,7 @@ class MetaTable(object):
         return ', '.join(s), ', '.join(v)
 
     def _insertSql(self, srcFieldString : str, valueFieldString : str):
-        return "insert into {} ({}) \nvalues({});\n".format(self.table_name, srcFieldString, valueFieldString)
+        return "insert into {} ({}) \nvalues({});".format(self.table_name, srcFieldString, valueFieldString)
 
     def insert(self):
         return self._insertSql(*self._buildSrcValue())

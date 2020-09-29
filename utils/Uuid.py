@@ -2,28 +2,33 @@
 默认规则，17位，4位header，5位时间，2位保留，6位自然数
 
 '''
+import time
 
 local_header = 'header'
 local_timestamp = 'timestamp'
 local_natural = 'natural'
 
 defaultFormatterWithTime = {
-    local_header: 4,
+    local_header: 5,
     local_timestamp: 5,
-    local_natural: 6
+    local_natural: 7
 }
 
 defaultFormatterWithoutTime = {
-    local_header: 4,
+    local_header: 5,
     local_timestamp: 0,
-    local_natural: 13
+    local_natural: 12
 }
 
 class Uuid():
-    def __init__(self, bias : int = 0, formatter : dict = defaultFormatterWithoutTime):
+    def __init__(self, bias : int = 0, formatter : dict = defaultFormatterWithoutTime, header = None):
         self.formatter = formatter
+        # header
+        if header is None:
+            self.header = "0".zfill(self.formatter[local_header])
+        else:
+            self.resetHeader(header)
 
-        self.header = "0".zfill(self.formatter[local_header])
         self.naturalIdLimit = int("9"*self.formatter[local_natural])
 
         self._naturalId : str = None
@@ -36,11 +41,25 @@ class Uuid():
         self.formatter[local_natural] <= 0):
             raise AttributeError
 
+    # def resetHeader(self, header):
+    #     if (isinstance(header, str)  and len(header) == self.formatter[local_header]):
+    #         self.header = header
+    #     else:
+    #         raise AttributeError
+
     def resetHeader(self, header):
-        if (isinstance(header, str)  and len(header) == self.formatter[local_header]):
-            self.header = header
+        hl = self.formatter[local_header]
+        if isinstance(header, int):
+            _h = str(header).zfill(hl)
+        elif isinstance(header, str):
+            _h = header.zfill(hl)
         else:
-            raise AttributeError
+            raise TypeError("header should be int or str only")
+
+        if len(_h) != hl:
+            raise AttributeError("header too long, should be {} digits or less".format(hl))
+        else:
+            self.header = _h
 
     def _timestamp(self):
         ts = ""

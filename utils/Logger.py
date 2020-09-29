@@ -17,9 +17,13 @@ class Logger():
     def write(self, line : str):
         if self.logFile is not None:
             self.logFile.write(line)
+        # to make chain operation available
+        return self
 
     def writeLine(self, line : str):
         self.write(line + "\n")
+        return self
 
     def close(self):
+        print("logger shutdown, check exported file = {}".format(self.logFile.name))
         self.logFile.close()

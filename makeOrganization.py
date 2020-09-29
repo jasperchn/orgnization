@@ -1,4 +1,5 @@
 from bean.OrgTree import *
+import utils.Constant as C
 
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"
@@ -8,7 +9,7 @@ if __name__ == '__main__':
 
     df = read(srcPath)
     pool = buildNodesPool(df)
-    treeBuilder = TreeBuilder(pool)
+    treeBuilder = TreeBuilder(pool, uuid=Uuid(header=C.H_Organization))
     treeBuilder.build(logger = Logger(buildPath(resourcePath, "out", "buildLog.txt")))
 
     '''
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     organizationSql = Logger(buildPath(resourcePath, "out", "organization.sql"))
     treeBuilder.toLogger(organizationSql, True)
 
-
+    saveByPickle(treeBuilder, buildPath(resourcePath, "out-intermediate", "organizationTrees.plk"))
 
 
 

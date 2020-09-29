@@ -34,13 +34,14 @@ def buildNodesPool(data : pd.DataFrame) -> dict:
 
 class TreeBuilder():
 
-    def __init__(self, pool : dict) -> None:
+    def __init__(self, pool : dict, uuid = Uuid()) -> None:
         super().__init__()
         self.pool = pool
         # 最终的森林
         self.trees = []
         self.interOrgNoFactory = InterOrgNoFactory()
-        self.uuid = Uuid()
+        # self.uuid = Uuid()
+        self.uuid = uuid
 
         # 统计值
         self.treesCount = 0
@@ -116,12 +117,12 @@ class TreeBuilder():
 
     def toLogger(self, logger : Logger, close = True):
         for tree in self.trees:
-            logger.write(tree.getTable().insert())
+            logger.writeLine(tree.getTable().insert())
             self._export(tree, logger)
         if close:
             logger.close()
 
     def _export(self, head, logger : Logger):
         for i, (key, node) in enumerate(head.getChildren().items()):
-            logger.write(node.getTable().insert())
+            logger.writeLine(node.getTable().insert())
             self._export(node, logger)

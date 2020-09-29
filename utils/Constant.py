@@ -1,3 +1,10 @@
+# primary id formatter
+H_Organization = "11"
+H_User = "22"
+H_Role = "33" # never used
+H_UserRole = "44"
+H_UserOrganization = "55"
+
 # raw table
 
 R_id = "id"
@@ -19,6 +26,11 @@ R_district_code = "district_code"
 R_create_time = "create_time"
 R_enabled = "enabled"
 R_address = "address"
+
+# USER_TABLE
+U_user_code = "USER_CODE"
+U_org_code = "ORG_CODE"
+U_user_name = "USER_NAME"
 
 # orgtable
 
