@@ -186,9 +186,13 @@ class Organization(MetaTable):
                  enabled = True,       # true
                  org_type = "fi",   # ?
                  set_fi_store = False,  # false
-                 set_top = False        # false
+                 set_top = False,        # false
+                 create_time = "now()",
+                 update_time = "now()"
                  ):
         super().__init__("organization")
+        self.create_time = create_time
+        self.update_time = update_time
         self.org_id = org_id
         self.inter_org_no = inter_org_no
         self.parent_org_id = parent_org_id

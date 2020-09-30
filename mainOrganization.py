@@ -22,9 +22,10 @@ if __name__ == '__main__':
     treeBuilder.fixTreesLevel(interOrgNoHead=30)
     # treeBuilder.export(filePath= buildPath(resourcePath, "out", "org.sql"))
 
-    organizationSql = Logger(buildPath(resourcePath, "out", "organization.sql"))
-    treeBuilder.toLogger(organizationSql, True)
+    # organizationSql = Logger(buildPath(resourcePath, "out", "organization.sql"))
+    # treeBuilder._toLogger(organizationSql, True)
 
+    treeBuilder.export(buildPath(resourcePath, "out", "organization.sql"))
     saveByPickle(treeBuilder, buildPath(resourcePath, "out-intermediate", "organizationTrees.plk"))
 
 

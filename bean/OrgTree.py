@@ -21,13 +21,6 @@ def buildNodesPool(data : pd.DataFrame) -> dict:
             org_name=line[const.R_org_name]
         )
 
-        # table = Table(
-        #     org_id=line[const.R_id],
-        #     parent_org_id=line[const.R_parent_org_id],
-        #     area=line[const.R_district_code],
-        #     fi_org_type=line[const.R_level_1_code],
-        #     org_name=line[const.R_org_name]
-        # )
         # 每个node初始化时都没有父节点
         pool[table.org_id] = Node(table.org_id, table, None)
     return pool
@@ -36,9 +29,12 @@ class TreeBuilder():
 
     def __init__(self, pool : dict, uuid = Uuid()) -> None:
         super().__init__()
+        # 所有节点，节点池
         self.pool = pool
-        # 最终的森林
+        # 最终的森林，真树根
         self.trees = []
+        # 伪头结点，把森林关联到头结点上，遍历代码更紧凑
+        self.root = None
         self.interOrgNoFactory = InterOrgNoFactory()
         # self.uuid = Uuid()
         self.uuid = uuid
@@ -50,7 +46,7 @@ class TreeBuilder():
     def build(self, logger : Logger = None):
         self._generate(logger)
 
-    # 列表需要倒序删除
+    # 重建关联关系，列表需要倒序删除
     def _generate(self, logger : Logger):
         with logger:
             for _, node in self.pool.items():
@@ -74,8 +70,18 @@ class TreeBuilder():
                         # 特别注意！table的topOrgId会出现混乱，后续重整层级时应特别注意
                         logger.writeLine("key error, can not find org with id = {} as parent org of {}, uplift it to topOrg".format(parentKey, node.key))
                         self.trees.append(node)
+            # make root
+            self._generateRoot()
+
+    # invoke this after self.trees has been set properly
+    def _generateRoot(self):
+        self.root = Node(key="root", value=Organization(), parent=None)
+        for node in self.trees:
+            self.root.addChild(node)
 
     # 重建层级信息，同时报告节点数量
+    # 第一层需要对inter-org-no的起始值做特殊处理
+    # 最合适的应该是bfs而不是dfs（bfs中插入一截对层数的判断处理interOrgNo），不过因为原本是用self.trees遍历第一层的，所以可以绕开这点
     def fixTreesLevel(self, interOrgNoHead = 30):
         self.nodesCount = 0
         self.treesCount = 0
@@ -115,14 +121,41 @@ class TreeBuilder():
             self.nodesCount += 1
             self._fixSingleTree(node, top)
 
-    def toLogger(self, logger : Logger, close = True):
-        for tree in self.trees:
-            logger.writeLine(tree.getTable().insert())
-            self._export(tree, logger)
-        if close:
-            logger.close()
+    # 输出要用规范的树结构出
 
-    def _export(self, head, logger : Logger):
+    def export(self, path :str):
+        self._toLogger(self.root, Logger(path))
+
+    def _toLogger(self, head: Node, logger: Logger):
         for i, (key, node) in enumerate(head.getChildren().items()):
             logger.writeLine(node.getTable().insert())
-            self._export(node, logger)
+            self._toLogger(node, logger)
+
+    # def _toLogger(self, logger : Logger, close=True):
+    #     for tree in self.trees:
+    #         logger.writeLine(tree.getTable().insert())
+    #         self._exportToLogger(tree, logger)
+    #     if close:
+    #         logger.close()
+    #
+    # def _exportToLogger(self, head, logger : Logger):
+    #     for i, (key, node) in enumerate(head.getChildren().items()):
+    #         logger.writeLine(node.getTable().insert())
+    #         self._exportToLogger(node, logger)
+
+
+
+    # def export(self, path :str):
+    #     self._toLogger(Logger(path), True)
+    #
+    # def _toLogger(self, logger : Logger, close=True):
+    #     for tree in self.trees:
+    #         logger.writeLine(tree.getTable().insert())
+    #         self._exportToLogger(tree, logger)
+    #     if close:
+    #         logger.close()
+    #
+    # def _exportToLogger(self, head, logger : Logger):
+    #     for i, (key, node) in enumerate(head.getChildren().items()):
+    #         logger.writeLine(node.getTable().insert())
+    #         self._exportToLogger(node, logger)

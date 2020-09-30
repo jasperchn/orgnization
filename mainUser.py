@@ -8,11 +8,12 @@ resourcePath = buildPath(os.getcwd().replace("\\", "/"), "resource")
 userPreHandledPath = buildPath(resourcePath, "out-intermediate", "users.csv")
 organizationTreesPath = buildPath(resourcePath, "out-intermediate", "organizationTrees.plk")
 userExportPath = buildPath(resourcePath, "out", "user_role_organization.sql")
+userPicklePath = buildPath("resource", "out-intermediate", "users.plk")
 
-# global Uuid Generators
-UuidOfUser = Uuid(header=C.H_User)
-UuidOfUserRole = Uuid(header=C.H_UserRole)
-UuidUserOrganization = Uuid(header=C.H_UserOrganization)
+# # global Uuid Generators
+# UuidOfUser = Uuid(header=C.H_User)
+# UuidOfUserRole = Uuid(header=C.H_UserRole)
+# UuidUserOrganization = Uuid(header=C.H_UserOrganization)
 
 
 def filterAvailable() -> str:
@@ -30,7 +31,6 @@ def filterAvailable() -> str:
     ORG_CODE 关联到机构表 -> 注意做存在性检查
     USER_NAME 实际上机构名，可以加上 “系统用户”后缀作为显示名
     '''
-    # available.loc[:, ["USER_CODE", "ORG_CODE", "USER_NAME"]].to_csv(path_or_buf=userPreHandledPath, index=False)
     available.loc[:, [C.U_user_code, C.U_org_code, C.U_user_name]].to_csv(path_or_buf=userPreHandledPath, index=False)
     return userPreHandledPath
 
@@ -54,18 +54,88 @@ def extractUser(line : pd.Series) -> User:
         bind_enterprise = False # 不绑定企业
     )
 
-
-# def retrieveOrgId(line : pd.Series) -> str:
-#     orgCode = line[C.U_org_code]
-#     organization: Organization = (allOrgs[orgCode]).getTable()
-#     return organization.org_id
-
 def retrieveOrganization(line : pd.Series) -> Organization:
     orgCode = line[C.U_org_code]
     organization: Organization = (allOrgs[orgCode]).getTable()
     return organization
 
+def extractUserOrganization(user: User, organization: Organization):
+    userOrganization: UserOrganization = UserOrganization(
+        id=UuidUserOrganization.generate(),
+        user_id=user.user_id,
+        user_org_id=organization.org_id,
+        display_name=user.display_name  # not necessary
+    )
+    return userOrganization
+
+def extractUserRole(user: User, role:Role):
+    userRole: UserRole = UserRole(
+        user_id=user.user_id,
+        role_id=role.role_id
+    )
+    return userRole
+
+
+# def exportAll(exportData : pd.DataFrame, exportPath : str):
+#     logger = Logger(logPath=exportPath)
+#     with logger:
+#         for i in exportData.index:
+#             line = exportData.loc[i, :]
+#             # make user
+#             user = extractUser(line)
+#             # link it to organization, this orgId has been proved to be valid id, so no check is required
+#             # retrieve orgId by orgCode, get roleId from dummy role
+#             organization: Organization = retrieveOrganization(line)
+#             role: Role = _preSetRole
+#
+#             # make user-organization, user-role
+#             userOrganization : UserOrganization = extractUserOrganization(user, organization)
+#             userRole : UserRole = extractUserRole(user, role)
+#
+#             # make sqls, be aware that sqls of organization are put to another file
+#             # (for organizations have their hierarchy dependence)
+#             logger.writeLine(user.insert())
+#             logger.writeLine(userRole.insert())
+#             logger.writeLine(userOrganization.insert())
+#             logger.writeLine("")
+
+def exportAll(exportData : pd.DataFrame, exportPath : str, picklePath : str = None):
+    logger = Logger(logPath=exportPath)
+    # 伴随一个dict准备存pickle
+    p = {}
+    with logger:
+        for i in exportData.index:
+            line = exportData.loc[i, :]
+            # make user
+            user = extractUser(line)
+            # link it to organization, this orgId has been proved to be valid id, so no check is required
+            # retrieve orgId by orgCode, get roleId from dummy role
+            organization: Organization = retrieveOrganization(line)
+            role: Role = _preSetRole
+
+            # make user-organization, user-role
+            userOrganization : UserOrganization = extractUserOrganization(user, organization)
+            userRole : UserRole = extractUserRole(user, role)
+
+            # make sqls, be aware that sqls of organization are put to another file
+            # (for organizations have their hierarchy dependence)
+            sqls = "\n".join([user.insert(), userRole.insert(), userOrganization.insert(), ""])
+            logger.writeLine(sqls)
+            p[user.user_name] = sqls
+
+            # logger.writeLine(user.insert())
+            # logger.writeLine(userRole.insert())
+            # logger.writeLine(userOrganization.insert())
+            # logger.writeLine("")
+    if not isEmpty(picklePath):
+        saveByPickle(p, picklePath)
+
 if __name__ == '__main__':
+    # global Uuid Generators
+    UuidOfUser = Uuid(header=C.H_User)
+    UuidOfUserRole = Uuid(header=C.H_UserRole)
+    UuidUserOrganization = Uuid(header=C.H_UserOrganization)
+
     # 如果不存在预处理文件，先处理出来
     if not isExistedFile(userPreHandledPath):
         filterAvailable()
@@ -91,49 +161,26 @@ if __name__ == '__main__':
     所以此段代码是以 user为中心，同时把中介表维护好，使user能够联系上organization和role 
     为了方便区分，其实可以把主键头区分一下（机构表也可以搞一搞）
     '''
-    logger = Logger(logPath=userExportPath)
-    with logger:
-        for i in usersData.index:
-            line = usersData.loc[i, :]
-            # make user
-            user = extractUser(line)
-            # link it to organization, this orgId has been proved to be valid id, so no check is required
-            # retrieve orgId by orgCode, get roleId from dummy role
-            organization: Organization = retrieveOrganization(line)
-            role: Role = _preSetRole
+    exportAll(usersData, userExportPath, userPicklePath)
 
-            # make user-organization, user-role
-            userOrganization : UserOrganization = UserOrganization(
-                id=UuidUserOrganization.generate(),
-                user_id=user.user_id,
-                user_org_id=organization.org_id,
-                display_name=user.display_name    # not necessary
-            )
-
-            userRole : UserRole = UserRole(
-                user_id=user.user_id,
-                role_id=role.role_id
-            )
-
-            # make sqls, be aware that sqls of organization are put to another file
-            # (for organizations have their hierarchy dependence)
-            logger.writeLine(user.insert())
-            logger.writeLine(userRole.insert())
-            logger.writeLine(userOrganization.insert())
-
-
-        pass
-
-
-
-
-
-
-        pass
-
-
-
-
-
-
-    pass
+    # logger = Logger(logPath=userExportPath)
+    # with logger:
+    #     for i in usersData.index:
+    #         line = usersData.loc[i, :]
+    #         # make user
+    #         user = extractUser(line)
+    #         # link it to organization, this orgId has been proved to be valid id, so no check is required
+    #         # retrieve orgId by orgCode, get roleId from dummy role
+    #         organization: Organization = retrieveOrganization(line)
+    #         role: Role = _preSetRole
+    #
+    #         # make user-organization, user-role
+    #         userOrganization : UserOrganization = extractUserOrganization(user, organization)
+    #         userRole : UserRole = extractUserRole(user, role)
+    #
+    #         # make sqls, be aware that sqls of organization are put to another file
+    #         # (for organizations have their hierarchy dependence)
+    #         logger.writeLine(user.insert())
+    #         logger.writeLine(userRole.insert())
+    #         logger.writeLine(userOrganization.insert())
+    #         logger.writeLine("")
