@@ -124,7 +124,9 @@ class TreeBuilder():
     # 输出要用规范的树结构出
 
     def export(self, path :str):
-        self._toLogger(self.root, Logger(path))
+        logger: Logger = Logger(path)
+        with logger:
+            self._toLogger(self.root, Logger(path))
 
     def _toLogger(self, head: Node, logger: Logger):
         for i, (key, node) in enumerate(head.getChildren().items()):

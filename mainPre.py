@@ -1,6 +1,6 @@
 from bean.OrgTree import *
 import pandas as pd
-
+from functools import reduce
 
 def makeCoder(source : pd.DataFrame) -> dict:
     ret = {}
@@ -9,6 +9,9 @@ def makeCoder(source : pd.DataFrame) -> dict:
         ret[raw] = code
     return ret
 
+# 去重 + 排序
+def removeDuplicated(l: list):
+    return reduce(lambda x, y: x if y in x else x + [y], [[], ] + l)
 
 '''
 codes是最早的数据改了表头得到的
@@ -49,4 +52,15 @@ if __name__ == '__main__':
             raise RuntimeError("error occurs when transferring code with raw code = {}".format(raw))
 
     # 输出src
+    print("export to {}".format(outPath))
+    # peek how many types are used
+    codesUsed = removeDuplicated(src.loc[:, "level_1_code"].values.tolist())
+    codesUsed.sort()
+
+    cLogger = Logger(buildPath(resourcePath, "out", "params.txt"))
+    with cLogger:
+        paramsTxt = "fiOrgType involved = {}, {} in total".format(codesUsed, len(codesUsed))
+        print(paramsTxt)
+        cLogger.writeLine(paramsTxt)
+
     src.to_csv(path_or_buf=outPath, index=False)
