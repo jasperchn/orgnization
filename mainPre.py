@@ -57,7 +57,7 @@ if __name__ == '__main__':
     codesUsed = removeDuplicated(src.loc[:, "level_1_code"].values.tolist())
     codesUsed.sort()
 
-    cLogger = Logger(buildPath(resourcePath, "out", "params.txt"))
+    cLogger = Logger(buildPath(resourcePath, "out-intermediate", "params.txt"))
     with cLogger:
         paramsTxt = "fiOrgType involved = {}, {} in total".format(codesUsed, len(codesUsed))
         print(paramsTxt)

@@ -10,7 +10,7 @@ if __name__ == '__main__':
     df = read(srcPath)
     pool = buildNodesPool(df)
     treeBuilder = TreeBuilder(pool, uuid=Uuid(header=C.H_Organization))
-    treeBuilder.build(logger = Logger(buildPath(resourcePath, "out", "buildLog.txt")))
+    treeBuilder.build(logger = Logger(buildPath(resourcePath, "out-intermediate", "organizationBuildLog.txt")))
 
     '''
     树恢复之后重走一遍森林，完成以下任务
