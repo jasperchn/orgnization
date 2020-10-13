@@ -181,22 +181,30 @@ class Organization(MetaTable):
                  area = None,
                  fi_org_type = None,
                  org_name = None,
+                 org_no = None,
+                 tel_no = "00000000",
+                 address = None,
                  org_level = None,
                  top_org_id = None,
                  enabled = True,       # true
                  org_type = "fi",   # ?
                  set_fi_store = False,  # false
                  set_top = False,        # false
+                 create_by = "admin",
                  create_time = "now()",
                  update_time = "now()"
                  ):
         super().__init__("organization")
+        self.create_by = create_by
         self.create_time = create_time
         self.update_time = update_time
         self.org_id = org_id
+        self.org_no = org_no
         self.inter_org_no = inter_org_no
         self.parent_org_id = parent_org_id
         self.area = area
+        self.address = address
+        self.tel_no = tel_no
         self.fi_org_type = fi_org_type
         self.org_name = org_name
         self.org_level = org_level

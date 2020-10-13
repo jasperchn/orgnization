@@ -18,7 +18,9 @@ def buildNodesPool(data : pd.DataFrame) -> dict:
             parent_org_id=line[const.R_parent_org_id],
             area=line[const.R_district_code],
             fi_org_type=line[const.R_level_1_code],
-            org_name=line[const.R_org_name]
+            org_name=line[const.R_org_name],
+            org_no=line[const.R_id],
+            address=line[const.R_address]
         )
 
         # 每个node初始化时都没有父节点
@@ -82,7 +84,7 @@ class TreeBuilder():
     # 重建层级信息，同时报告节点数量
     # 第一层需要对inter-org-no的起始值做特殊处理
     # 最合适的应该是bfs而不是dfs（bfs中插入一截对层数的判断处理interOrgNo），不过因为原本是用self.trees遍历第一层的，所以可以绕开这点
-    def fixTreesLevel(self, interOrgNoHead = 30):
+    def fixTreesLevel(self, interOrgNoHead = 00):
         self.nodesCount = 0
         self.treesCount = 0
 

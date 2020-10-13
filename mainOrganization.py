@@ -19,7 +19,8 @@ if __name__ == '__main__':
     3 替换orgId为数字型，数据库的orgId是big int，不是字符串，可以用以前的uuid模块来生成，减一位避免冲撞数据库
     '''
 
-    treeBuilder.fixTreesLevel(interOrgNoHead=30)
+
+    treeBuilder.fixTreesLevel(interOrgNoHead=10)
     # treeBuilder.export(filePath= buildPath(resourcePath, "out", "org.sql"))
 
     # organizationSql = Logger(buildPath(resourcePath, "out", "organization.sql"))
