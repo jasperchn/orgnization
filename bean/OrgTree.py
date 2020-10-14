@@ -20,7 +20,10 @@ def buildNodesPool(data : pd.DataFrame) -> dict:
             fi_org_type=line[const.R_level_1_code],
             org_name=line[const.R_org_name],
             org_no=line[const.R_id],
-            address=line[const.R_address]
+            # address=line[const.R_address]
+            # todo 这种做法并不严格，其实需要code的pickle，但是我已经找不到了
+            # address=line[const.R_province_value] + "," + line[const.R_city_value] + "," + line[const.R_district_value]
+            address=line[const.R_city_value] + "," + line[const.R_district_value]
         )
 
         # 每个node初始化时都没有父节点
@@ -84,29 +87,37 @@ class TreeBuilder():
     # 重建层级信息，同时报告节点数量
     # 第一层需要对inter-org-no的起始值做特殊处理
     # 最合适的应该是bfs而不是dfs（bfs中插入一截对层数的判断处理interOrgNo），不过因为原本是用self.trees遍历第一层的，所以可以绕开这点
-    def fixTreesLevel(self, interOrgNoHead = 00):
+    def fixTreesLevel(self, interOrgNoHead = 00, override: dict = None):
         self.nodesCount = 0
         self.treesCount = 0
 
         for i, head in enumerate(self.trees):
             # 设置初值
             table : Organization = head.getTable()
-            table.org_id = self.uuid.generate()
-            table.parent_org_id = None
-            table.inter_org_no = self.interOrgNoFactory.getOne(str(i + interOrgNoHead))
-            table.org_level = 1
-            table.top_org_id = table.org_id
+
+            if override is not None and override.__contains__(table.org_no):
+                table.org_id = override[table.org_no]
+                table.parent_org_id = None
+                table.inter_org_no = self.interOrgNoFactory.getOne(str(i + interOrgNoHead))
+                table.org_level = 1
+                table.top_org_id = table.org_id
+            else:
+                table.org_id = self.uuid.generate()
+                table.parent_org_id = None
+                table.inter_org_no = self.interOrgNoFactory.getOne(str(i + interOrgNoHead))
+                table.org_level = 1
+                table.top_org_id = table.org_id
 
             self.treesCount += 1
             self.nodesCount += 1
             # 递归
-            self._fixSingleTree(head, head)
+            self._fixSingleTree(head, head, override)
 
         # make a brief report
         print("brief report: treeCounts = {}, nodeCounts = {}".format(self.treesCount, self.nodesCount))
 
     # 尾递归？
-    def _fixSingleTree(self, head : Node, top: Node):
+    def _fixSingleTree(self, head : Node, top: Node, override: dict = None):
         for i, (key, node) in enumerate(head.getChildren().items()):
             currentTable : Organization = node.getTable()
             parentTable : Organization = head.getTable()
@@ -114,16 +125,69 @@ class TreeBuilder():
 
             interOrgNo = self.interOrgNoFactory.getDown(parentTable.inter_org_no)
 
-            currentTable.org_id = self.uuid.generate()
-            currentTable.parent_org_id = parentTable.org_id
-            currentTable.inter_org_no = self.interOrgNoFactory.getRight(interOrgNo, i)
-            currentTable.org_level = parentTable.org_level + 1
-            currentTable.top_org_id = topTable.top_org_id
+            if override is not None and override.__contains__(currentTable.org_no):
+                overrideId = override[currentTable.org_no]
+                currentTable.org_id = overrideId
+                currentTable.parent_org_id = parentTable.org_id
+                currentTable.inter_org_no = self.interOrgNoFactory.getRight(interOrgNo, i)
+                currentTable.org_level = parentTable.org_level + 1
+                currentTable.top_org_id = topTable.top_org_id
+            else:
+                currentTable.org_id = self.uuid.generate()
+                currentTable.parent_org_id = parentTable.org_id
+                currentTable.inter_org_no = self.interOrgNoFactory.getRight(interOrgNo, i)
+                currentTable.org_level = parentTable.org_level + 1
+                currentTable.top_org_id = topTable.top_org_id
 
             self.nodesCount += 1
-            self._fixSingleTree(node, top)
+            self._fixSingleTree(node, top, override)
 
     # 输出要用规范的树结构出
+
+
+    # # 重建层级信息，同时报告节点数量
+    # # 第一层需要对inter-org-no的起始值做特殊处理
+    # # 最合适的应该是bfs而不是dfs（bfs中插入一截对层数的判断处理interOrgNo），不过因为原本是用self.trees遍历第一层的，所以可以绕开这点
+    # def fixTreesLevel(self, interOrgNoHead = 00):
+    #     self.nodesCount = 0
+    #     self.treesCount = 0
+    #
+    #     for i, head in enumerate(self.trees):
+    #         # 设置初值
+    #         table : Organization = head.getTable()
+    #         table.org_id = self.uuid.generate()
+    #         table.parent_org_id = None
+    #         table.inter_org_no = self.interOrgNoFactory.getOne(str(i + interOrgNoHead))
+    #         table.org_level = 1
+    #         table.top_org_id = table.org_id
+    #
+    #         self.treesCount += 1
+    #         self.nodesCount += 1
+    #         # 递归
+    #         self._fixSingleTree(head, head)
+    #
+    #     # make a brief report
+    #     print("brief report: treeCounts = {}, nodeCounts = {}".format(self.treesCount, self.nodesCount))
+    #
+    # # 尾递归？
+    # def _fixSingleTree(self, head : Node, top: Node):
+    #     for i, (key, node) in enumerate(head.getChildren().items()):
+    #         currentTable : Organization = node.getTable()
+    #         parentTable : Organization = head.getTable()
+    #         topTable : Organization = top.getTable()
+    #
+    #         interOrgNo = self.interOrgNoFactory.getDown(parentTable.inter_org_no)
+    #
+    #         currentTable.org_id = self.uuid.generate()
+    #         currentTable.parent_org_id = parentTable.org_id
+    #         currentTable.inter_org_no = self.interOrgNoFactory.getRight(interOrgNo, i)
+    #         currentTable.org_level = parentTable.org_level + 1
+    #         currentTable.top_org_id = topTable.top_org_id
+    #
+    #         self.nodesCount += 1
+    #         self._fixSingleTree(node, top)
+    #
+    # # 输出要用规范的树结构出
 
     def export(self, path :str):
         logger: Logger = Logger(path)

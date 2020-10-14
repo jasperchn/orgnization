@@ -23,6 +23,11 @@ R_top_org_name = "top_org_name"
 R_province_code = "province_code"
 R_city_code = "city_code"
 R_district_code = "district_code"
+
+R_province_value = "province_name"
+R_city_value = "city_name"
+R_district_value = "district_name"
+
 R_create_time = "create_time"
 R_enabled = "enabled"
 R_address = "address"
@@ -32,7 +37,34 @@ U_user_code = "USER_CODE"
 U_org_code = "ORG_CODE"
 U_user_name = "USER_NAME"
 
-# orgtable
+# product table
+P_valid = "valid"
+P_org_no = "org_no"
+P_product_name = "product_name"
+P_accept_mode = "accept_mode"
+P_guarantee_mode = "guarantee_mode"
+P_usage_inf = "usage_inf"
+P_pay_mode = "pay_mode"
+P_credit_amount = "credit_amount"
+P_min_credit_amount = "min_credit_amount"
+P_max_credit_amount = "max_credit_amount"
+P_max_loan_terms = "max_loan_terms"
+
+P_interest_rates = "interest_rates"
+P_min_interest_rates = "min_interest_rates"
+P_max_interest_rates = "max_interest_rates"
+
+
+P_processing_duration = "processing_duration"
+P_customer_type = "customer_type"
+P_product_type = "product_type"
+P_is_policy_product = "is_policy_product"
+
+
+
+
+
+
 
 
 from table.UsrDb import Role
