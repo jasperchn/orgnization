@@ -152,6 +152,15 @@ def handleProcessingDuration(s: str):
     import math
     return int(math.ceil(float(n)))
 
+# 1 yes 2 no
+def handleIsPolicyProduct(s):
+    if s == 1 or s == '1':
+        return True
+    elif s == 2 or s == '2':
+        return False
+    else:
+        raise RuntimeError("bad policy")
+
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"
     srcPath = buildPath(resourcePath, "src", "product-1-input.csv")
@@ -169,6 +178,7 @@ if __name__ == '__main__':
 
     for i in sub.index:
         try:
+            sub.loc[i, C.P_is_policy_product] = handleIsPolicyProduct(sub.loc[i, C.P_is_policy_product])
             sub.loc[i, C.P_max_loan_terms] = handleMaxLoanTerm(sub.loc[i, C.P_max_loan_terms])
             sub.loc[i, C.P_accept_mode] = handleAcceptMode(sub.loc[i, C.P_accept_mode])
             sub.loc[i, C.P_guarantee_mode] = handleGuaranteeMode(sub.loc[i, C.P_guarantee_mode])
@@ -189,6 +199,8 @@ if __name__ == '__main__':
             sub.loc[i, C.P_max_interest_rates] = maxInterest
         except Exception as e:
             print("shit happens during process data, i = {}, name = {}".format(i, sub.loc[i, C.P_product_name]))
+
+    # 有没有必要删掉无用数据？
     sub.to_csv(path_or_buf=outPath, index=False)
 
     print("")
@@ -203,4 +215,4 @@ if __name__ == '__main__':
     # print(extractAllNumbers(s3))
 
 
-    pass    
+    pass
