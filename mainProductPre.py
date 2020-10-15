@@ -10,8 +10,13 @@ import utils.Constant as C
 def isNumber(c : str):
     return ord(c) >= 48 and ord(c) <= 57
 
+# '.'
 def isDigitPoint(c : str):
     return ord(c) == 46
+
+# '、'
+def isChineseSlash(c : str):
+    return ord(c) == 12289
 
 def isNumericalChar(c : str):
     return isNumber(c) or isDigitPoint(c)
@@ -92,17 +97,60 @@ def parseMinMax(src : str) -> tuple:
 处理形如 1、2 => ["1", "2"]
 '''
 def handleMultipleParams(s : str):
-    s = s.replace(" ", "")
-    s = s.replace("、", ",")
-    return s.split(",").__repr__().replace("\'", "\"").replace(" ", "")
+    try:
+        s = s.replace(" ", "")
+        s = s.replace("、", ",")
+        return s.split(",").__repr__().replace("\'", "\"").replace(" ", "")
+    except Exception as he:
+        # print(he)
+        raise he
 
 def selectFirstParam(s : str):
-    s = s.replace(" ", "")
-    return s.split("、")[0]
+    try:
+        s = s.replace(" ", "")
+        return s.split("、")[0]
+    except Exception as he:
+        # print(he)
+        raise he
 
-def handleProductType(s : str):
-    pass
 
+# productType不能为空，默认若为空，填一个10（其他）
+def handleProductType(s: str):
+    def filterChar(v: str):
+        r = ""
+        for c in v:
+            if isNumber(c) or isChineseSlash(c):
+                r += c
+        return r
+    # start
+    # 空值填一发默认值
+    if isEmpty(s):
+        return "10"
+        # 过滤掉数字和顿号意外的所有字符
+    else:
+        s = filterChar(s)
+        # 过滤之后可能得到"10、"之类的输出，不过只选第一个，所以无所谓
+        return selectFirstParam(s)
+
+# accept_mode好像没有中文
+def handleAcceptMode(s: str):
+    return selectFirstParam(s)
+
+def handleMaxLoanTerm(s: str):
+    return parseMinMax(s)[1]
+
+# guarantee_mode可以为空
+def handleGuaranteeMode(s: str):
+    if isEmpty(s):
+        return s
+    else:
+        return handleMultipleParams(s)
+
+def handleProcessingDuration(s: str):
+    n = parseMinMax(s)[1]
+    # 向上取整
+    import math
+    return int(math.ceil(float(n)))
 
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"
@@ -121,13 +169,15 @@ if __name__ == '__main__':
 
     for i in sub.index:
         try:
-            sub.loc[i, C.P_guarantee_mode] = handleMultipleParams(sub.loc[i, C.P_guarantee_mode])
-            # sub.loc[i, C.P_guarantee_mode] = handleMultipleParams(str(sub.loc[i, C.P_guarantee_mode]))
+            sub.loc[i, C.P_max_loan_terms] = handleMaxLoanTerm(sub.loc[i, C.P_max_loan_terms])
+            sub.loc[i, C.P_accept_mode] = handleAcceptMode(sub.loc[i, C.P_accept_mode])
+            sub.loc[i, C.P_guarantee_mode] = handleGuaranteeMode(sub.loc[i, C.P_guarantee_mode])
             sub.loc[i, C.P_pay_mode] = handleMultipleParams(sub.loc[i, C.P_pay_mode])
             sub.loc[i, C.P_customer_type] = handleMultipleParams(sub.loc[i, C.P_customer_type])
             sub.loc[i, C.P_usage_inf] = handleMultipleParams(sub.loc[i, C.P_usage_inf])
+            sub.loc[i, C.P_processing_duration] = handleProcessingDuration(sub.loc[i, C.P_processing_duration])
             # product type 有空置还有中文，麻痹！
-            sub.loc[i, C.P_product_type] = selectFirstParam(sub.loc[i, C.P_product_type])
+            sub.loc[i, C.P_product_type] = handleProductType(sub.loc[i, C.P_product_type])
             # sub.loc[i, C.P_product_type] = selectFirstParam(str(sub.loc[i, C.P_product_type]))
 
             sub.loc[i, C.P_min_credit_amount] = '0'
@@ -138,7 +188,6 @@ if __name__ == '__main__':
             sub.loc[i, C.P_min_interest_rates] = minInterest
             sub.loc[i, C.P_max_interest_rates] = maxInterest
         except Exception as e:
-            print(e)
             print("shit happens during process data, i = {}, name = {}".format(i, sub.loc[i, C.P_product_name]))
     sub.to_csv(path_or_buf=outPath, index=False)
 
