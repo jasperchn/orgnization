@@ -45,7 +45,9 @@ def isEmpty(obj) -> bool:
     elif (isinstance(obj, str)):
         return obj == ""
     else:
-        return obj is np.NaN
+        # return obj is np.NaN
+        # 上面那样写可能有bug
+        return obj is np.NaN or np.isnan(obj)
 
 
 # def writeLine(src):

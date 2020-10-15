@@ -4,6 +4,8 @@ H_User = "22"
 H_Role = "33" # never used
 H_UserRole = "44"
 H_UserOrganization = "55"
+H_Product = "66"
+
 
 # raw table
 

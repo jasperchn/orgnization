@@ -17,9 +17,9 @@ class Product(MetaTable):
                  product_title,
                  product_type,
                  rates_unit,
-                 status,
                  usage_inf,
                  inter_org_no,    # 这个尼玛重头戏了，关联到机构去了
+                 status="onTheShelf",
                  max_interest_rates=None,
                  max_loan_terms=None,
                  redirecturl=None,
@@ -27,18 +27,20 @@ class Product(MetaTable):
                  product_policy_id=None,
                  target_customer=None,
                  product_category=None,
-                 is_policy_product=None,
+                 is_policy_product=False,
                  guarantee_mode=None,
                  risk_model_id=None,    # 这个其实是有外键的，但是同时又允许为空
                  ext_pid=None,
                  enabled=True,
                  is_ccb_product=False,
-                 create_by="system",
-                 update_by="system",
+                 create_by="admin",
+                 update_by="admin",
                  create_time="now()",
-                 update_time="now()"
+                 update_time="now()",
+                 status_update_time="now()"
                  ):
         super().__init__("product")
+        self.status_update_time = status_update_time
         self.product_id = product_id
         self.accept_mode = accept_mode
         self.currency = currency
