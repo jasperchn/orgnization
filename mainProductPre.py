@@ -7,57 +7,57 @@ import utils.Constant as C
 递归吧
 '''
 
-def isNumber(c : str):
-    return ord(c) >= 48 and ord(c) <= 57
+# def isNumber(c : str):
+#     return ord(c) >= 48 and ord(c) <= 57
+#
+# # '.'
+# def isDigitPoint(c : str):
+#     return ord(c) == 46
+#
+# # '、'
+# def isChineseSlash(c : str):
+#     return ord(c) == 12289
+#
+# def isNumericalChar(c : str):
+#     return isNumber(c) or isDigitPoint(c)
 
-# '.'
-def isDigitPoint(c : str):
-    return ord(c) == 46
-
-# '、'
-def isChineseSlash(c : str):
-    return ord(c) == 12289
-
-def isNumericalChar(c : str):
-    return isNumber(c) or isDigitPoint(c)
-
-# 数字不能以小数点打头
-def _extractFirstNumberLocation(src : str) -> tuple:
-    h, t, f = -1, -1, False
-    for i, c in enumerate(src):
-        # 找到head
-        if not f and h < 0 and isNumber(c):
-            h = i
-            f = True
-        # 开始找尾巴
-        if f and not isNumericalChar(c):
-        # if h >= 0 and h < i and t < 0 and isNumericalChar(c):
-            t = i
-            break
-    # 处理 sss777 末尾的问题
-    if f and t < 0:
-        t = i + 1
-    if h >= 0 and t >= 0 and h < t:
-        # return str[h : t + 1]
-        return h, t
-    else:
-        return None, None
-
-def extractAllNumbers(src : str):
-    def _recursiveSearch(d : str, container : list):
-        h, t = _extractFirstNumberLocation(d)
-        if h is None or t is None:
-            return
-        container.append(d[h: t])
-        _recursiveSearch(d[t:], container)
-
-    # start
-    re = []
-    if src is None or len(src) <= 0:
-        return re
-    else:
-        _recursiveSearch(src, re)
-        return re
+# # 数字不能以小数点打头
+# def _extractFirstNumberLocation(src : str) -> tuple:
+#     h, t, f = -1, -1, False
+#     for i, c in enumerate(src):
+#         # 找到head
+#         if not f and h < 0 and isNumber(c):
+#             h = i
+#             f = True
+#         # 开始找尾巴
+#         if f and not isNumericalChar(c):
+#         # if h >= 0 and h < i and t < 0 and isNumericalChar(c):
+#             t = i
+#             break
+#     # 处理 sss777 末尾的问题
+#     if f and t < 0:
+#         t = i + 1
+#     if h >= 0 and t >= 0 and h < t:
+#         # return str[h : t + 1]
+#         return h, t
+#     else:
+#         return None, None
+#
+# def extractAllNumbers(src : str):
+#     def _recursiveSearch(d : str, container : list):
+#         h, t = _extractFirstNumberLocation(d)
+#         if h is None or t is None:
+#             return
+#         container.append(d[h: t])
+#         _recursiveSearch(d[t:], container)
+#
+#     # start
+#     re = []
+#     if src is None or len(src) <= 0:
+#         return re
+#     else:
+#         _recursiveSearch(src, re)
+#         return re
 
 '''
 分开左右两边，用'-'的
@@ -95,20 +95,43 @@ def parseMinMax(src : str) -> tuple:
 
 '''
 处理形如 1、2 => ["1", "2"]
+
+
+# todo -1
 '''
+
+def filterChar(v: str):
+    r = ""
+    for c in v:
+        if isNumber(c) or isChineseSlash(c):
+            r += c
+    return r
+
 def handleMultipleParams(s : str):
     try:
+        # s = s.replace(" ", "")
+        # s = s.replace("、", ",")
+        # return s.split(",").__repr__().replace("\'", "\"").replace(" ", "")
+
         s = s.replace(" ", "")
+        s = filterChar(s)
         s = s.replace("、", ",")
-        return s.split(",").__repr__().replace("\'", "\"").replace(" ", "")
+        s = list(map(lambda x: str(int(x)-1), s.split(",")))
+        return s.__repr__().replace("\'", "\"").replace(" ", "")
+
     except Exception as he:
         # print(he)
         raise he
 
 def selectFirstParam(s : str):
     try:
+        # s = s.replace(" ", "")
+        # return s.split("、")[0]
+
         s = s.replace(" ", "")
-        return s.split("、")[0]
+        s = filterChar(s)
+        return str(int(s.split("、")[0]) - 1)
+
     except Exception as he:
         # print(he)
         raise he
@@ -116,12 +139,6 @@ def selectFirstParam(s : str):
 
 # productType不能为空，默认若为空，填一个10（其他）
 def handleProductType(s: str):
-    def filterChar(v: str):
-        r = ""
-        for c in v:
-            if isNumber(c) or isChineseSlash(c):
-                r += c
-        return r
     # start
     # 空值填一发默认值
     if isEmpty(s):
@@ -134,6 +151,9 @@ def handleProductType(s: str):
 
 # accept_mode好像没有中文
 def handleAcceptMode(s: str):
+    return selectFirstParam(s)
+
+def handleCustomerType(s: str):
     return selectFirstParam(s)
 
 def handleMaxLoanTerm(s: str):
@@ -161,6 +181,10 @@ def handleIsPolicyProduct(s):
     else:
         raise RuntimeError("bad policy")
 
+def handlerMaxCreditAmount(s):
+    #转数字 * 10000
+    return str(float(s) * 10000)
+
 if __name__ == '__main__':
     resourcePath = os.getcwd().replace("\\", "/") + "/resource"
     srcPath = buildPath(resourcePath, "src", "product-1-input.csv")
@@ -183,7 +207,8 @@ if __name__ == '__main__':
             sub.loc[i, C.P_accept_mode] = handleAcceptMode(sub.loc[i, C.P_accept_mode])
             sub.loc[i, C.P_guarantee_mode] = handleGuaranteeMode(sub.loc[i, C.P_guarantee_mode])
             sub.loc[i, C.P_pay_mode] = handleMultipleParams(sub.loc[i, C.P_pay_mode])
-            sub.loc[i, C.P_customer_type] = handleMultipleParams(sub.loc[i, C.P_customer_type])
+            # sub.loc[i, C.P_customer_type] = handleMultipleParams(sub.loc[i, C.P_customer_type])
+            sub.loc[i, C.P_customer_type] = handleCustomerType(sub.loc[i, C.P_customer_type])
             sub.loc[i, C.P_usage_inf] = handleMultipleParams(sub.loc[i, C.P_usage_inf])
             sub.loc[i, C.P_processing_duration] = handleProcessingDuration(sub.loc[i, C.P_processing_duration])
             # product type 有空置还有中文，麻痹！
@@ -191,7 +216,8 @@ if __name__ == '__main__':
             # sub.loc[i, C.P_product_type] = selectFirstParam(str(sub.loc[i, C.P_product_type]))
 
             sub.loc[i, C.P_min_credit_amount] = '0'
-            sub.loc[i, C.P_max_credit_amount] = sub.loc[i, C.P_credit_amount]
+            # sub.loc[i, C.P_max_credit_amount] = sub.loc[i, C.P_credit_amount]
+            sub.loc[i, C.P_max_credit_amount] = handlerMaxCreditAmount(sub.loc[i, C.P_credit_amount])
             # 重头戏，处理利率
             minInterest, maxInterest = parseMinMax(sub.loc[i, C.P_interest_rates])
             # 检查并且抛出
@@ -202,17 +228,6 @@ if __name__ == '__main__':
 
     # 有没有必要删掉无用数据？
     sub.to_csv(path_or_buf=outPath, index=False)
-
-    print("")
-
-    # s1 = "这恩8.5512%hh0.223jjj77"
-    # s2 = "8.5512sssdd2%hh0.2aa1"
-    # s3 = "sssdd2558ggbb2210.2aa"
-    #
-    # r1 = extractAllNumbers(s1)
-    # print(r1)
-    # print(extractAllNumbers(s2))
-    # print(extractAllNumbers(s3))
-
+    print("export to = {}".format(outPath))
 
     pass

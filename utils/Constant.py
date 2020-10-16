@@ -5,7 +5,8 @@ H_Role = "33" # never used
 H_UserRole = "44"
 H_UserOrganization = "55"
 H_Product = "66"
-
+H_ProductDesc = "77"
+H_ProductPal = "88"
 
 # raw table
 
@@ -64,9 +65,21 @@ P_is_policy_product = "is_policy_product"
 
 
 
+# product desc table
+PD_conditions = "process_condition"   # terms
+PD_special = "special" # specialities
+PD_process = "apply_process" # loanprocess
+PD_materials = "apply_material" # materials
 
+PD_ENUM_TERMS = "terms"
+PD_ENUM_SPECIALITIES = "specialities"
+PD_ENUM_LOANPROCESS = "loanprocess"
+PD_ENUM_MATERIALS = "materials"
 
-
+#SP
+PAL_product_add = "产品新增"
+PAL_product_apply = "申请上架"
+PAL_product_approve = "上架审批通过"
 
 
 from table.UsrDb import Role

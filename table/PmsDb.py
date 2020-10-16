@@ -1,5 +1,42 @@
 from table.MetaTable import MetaTable
 
+class ProductApprovalLog(MetaTable):
+    def __init__(self,
+                 log_id,
+                 product_id,
+                 action_type,
+                 action_time="now()",
+                 action_by="236064810956886016",
+                 remarks=None
+                 ):
+        super().__init__("product_approval_log")
+        self.log_id = log_id
+        self.product_id = product_id
+        self.action_type = action_type
+        self.action_time = action_time
+        self.action_by = action_by
+        self.remarks = remarks
+
+class ProductDesc(MetaTable):
+    def __init__(self,
+                 rec_id,
+                 product_id,
+                 desc_type,     # 4种 terms, specialities, loanprocess, materials   条件， 特点，流程，材料
+                 content,
+                 enabled=True,
+                 create_time="now()",
+                 update_time="now()"
+                 ):
+        super().__init__("product_desc")
+        self.rec_id = rec_id
+        self.product_id = product_id
+        self.desc_type = desc_type
+        self.content = content
+        self.enabled = enabled
+        self.create_time = create_time
+        self.update_time = update_time
+
+
 class Product(MetaTable):
     def __init__(self,
                  product_id,
@@ -37,7 +74,9 @@ class Product(MetaTable):
                  update_by="admin",
                  create_time="now()",
                  update_time="now()",
-                 status_update_time="now()"
+                 status_update_time="now()",
+                 submit_approval_time="now()",
+                 approval_time="now()"
                  ):
         super().__init__("product")
         self.status_update_time = status_update_time
@@ -76,3 +115,5 @@ class Product(MetaTable):
         self.update_by = update_by
         self.create_time = create_time
         self.update_time = update_time
+        self.submit_approval_time = submit_approval_time
+        self.approval_time = approval_time
